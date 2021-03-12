@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using StreamingLibrary;
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,14 +14,30 @@ public class Test : MonoBehaviour
     private Dropdown m_videoDropdown;
     [SerializeField]
     private Camera m_camera;
+    [SerializeField]
+    private MeshRenderer m_objectRenderer;
+    [SerializeField]
+    private InputField m_chatInput;
+    [SerializeField]
+    private InputField m_userName;
+    [SerializeField]
+    private InputField m_channelName;
+    [SerializeField]
+    private Text m_outputText;
+    [SerializeField]
+    private Toggle m_isBroadcaster;
     private bool _started = false;
     private JoinInfoBase m_joinInfoBase;
+    [SerializeField]
+    private GameObject m_messagePrefab;
+    [SerializeField]
+    private Transform m_chatContainer;
 
-    public static string Name = "huilo";
+    public static string Name = "vasya";
     public static string ChannelId = "123";
-    public static string AppId = "OnixApp";
-    public static string SharedKey = "684b55f4fab34b7abd47b8210660a9635798a0560cb949a0a61129c7ec4f3658";
-    public static string Gateway = "http://localhost:8080/sync";
+    public static string AppId = "StreamingApp";
+    public static string SharedKey = "61cbc74ee19a42d3a926797309166829335d16c1379a4d8f96421886c7ca8e10";
+    public static string Gateway = "http://10.10.150.68:8080/sync";
     public static bool AudioOnly = false;
     public static bool ReceiveOnly = false;
     public static bool Simulcast = false;
@@ -29,9 +47,15 @@ public class Test : MonoBehaviour
 
     void Start()
     {
+        streaming = new StreamingLibrary.Streaming();
+    }
+
+    public void StartStreamAction()
+    {
         m_joinInfoBase = new JoinInfoBase();
-        m_joinInfoBase.Name = Name;
-        m_joinInfoBase.ChannelId = ChannelId;
+        m_joinInfoBase.Name = m_userName.text;
+        m_joinInfoBase.ChannelId = m_channelName.text;
+        Debug.Log($"chat id {m_channelName.text}");
         m_joinInfoBase.AppId = AppId;
         m_joinInfoBase.SharedKey = SharedKey;
         m_joinInfoBase.Gateway = Gateway;
@@ -41,16 +65,50 @@ public class Test : MonoBehaviour
         m_joinInfoBase.CaptureScreen = CaptureScreen;
         m_joinInfoBase.CaptureWithUnityCamera = CaptureWithUnityCamera;
         m_joinInfoBase.Mode = Mode.Sfu;
-         streaming = new StreamingLibrary.Streaming();
-    }
+        m_joinInfoBase.IsBroadcaster = m_isBroadcaster.isOn;
 
-    public void StartStreamAction()
-    {
+        //streaming.AddOnReceivedMessageHandler(AddMessageToChat);
+        //streaming.RemoveOnReceivedMessageHandler(AddMessageToChat);
+        StreamingLibrary.Streaming.OnMessageReceived += AddMessageToChat;
+        streaming.SetMaterialToDisplay(m_objectRenderer.sharedMaterial);
         streaming.SetCamera(m_camera);
         streaming.StartStream(this, m_joinInfoBase);
         _started = true;
     }
-    
+
+    public void SendMessageToChat()
+    {
+        streaming.SendChatMessage(m_chatInput.text);
+    }
+
+    private void AddMessageToChat(MessageData messageData)
+    {
+
+        Debug.Log($"message received on unity client {messageData.Message}");
+        try
+        {
+            GameObject messageObj = Instantiate(m_messagePrefab, m_chatContainer);
+            var messageUI = messageObj.GetComponent<MessageUI>();
+            Debug.Log($"messageui {messageObj.name}");
+            messageUI.SetMessageUI(messageData);
+        }
+        catch(System.Exception e)
+        {
+            Debug.Log(e.Message);
+        }
+
+
+        Debug.Log("TMP");
+
+    }
+    [ContextMenu("Create som F")]
+    public void AddMessageToChat()
+    {
+
+        Debug.Log($"message received on unity client AAAAAAA");
+        //GameObject messageObj = Instantiate(m_messagePrefab, m_chatContainer);
+
+    }
     public void SourceInputHandler()
     {
         streaming.AddVideoSourceInputsDropdown(m_videoDropdown);
@@ -65,7 +123,10 @@ public class Test : MonoBehaviour
         }
 
     }
-
+    public void Leave()
+    {
+        streaming.Leave();
+    }
     private void LateUpdate()
     {
         if (_started)
