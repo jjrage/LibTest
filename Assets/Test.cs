@@ -37,9 +37,9 @@ public class Test : MonoBehaviour
 
     public static string Name = "vasya";
     public static string ChannelId = "123";
-    public static string AppId = "OnixApp";
-    public static string SharedKey = "684b55f4fab34b7abd47b8210660a9635798a0560cb949a0a61129c7ec4f3658";
-    public static string Gateway = "http://192.168.0.103:8080/sync";
+    public static string AppId = "StreamingApp";
+    public static string SharedKey = "61cbc74ee19a42d3a926797309166829335d16c1379a4d8f96421886c7ca8e10";
+    public static string Gateway = "http://10.10.150.68:8080/sync";
     public static bool AudioOnly = false;
     public static bool ReceiveOnly = false;
     public static bool Simulcast = false;
@@ -47,7 +47,7 @@ public class Test : MonoBehaviour
     public static bool CaptureWithUnityCamera = true;
     public static Mode Mode = Mode.Sfu;
     private object LockObject;
-    private object messageLock = new object();
+
 
     void Start()
     {
@@ -73,10 +73,14 @@ public class Test : MonoBehaviour
 
         //streaming.AddOnReceivedMessageHandler(AddMessageToChat);
         //streaming.RemoveOnReceivedMessageHandler(AddMessageToChat);
-        StreamingLibrary.Streaming.OnMessageReceived += AddMessageToChat;
+        //StreamingLibrary.Streaming.OnMessageReceived += AddMessageToChat;
+        streaming.OnMessageSended += AddMessageToChat;
+        streaming.OnMessageReceived += AddMessageToChat;
         streaming.SetMaterialToDisplay(m_displayMaterial);
         streaming.SetCamera(m_camera);
-        streaming.StartStream(this, m_joinInfoBase);
+        streaming.SetConnectionInfo(m_joinInfoBase);
+        streaming.SetMonoBehaviourProxy(this);
+        streaming.StartStream();
         _started = true;
     }
 
@@ -84,12 +88,12 @@ public class Test : MonoBehaviour
     {
         streaming.SendChatMessage(m_chatInput.text);
     }
+    
     private void AddMessageToChat(MessageData messageData)
     {
         Debug.Log($"message received on unity client {messageData.Message}");
         try
-        {
-            
+        {          
             GameObject messageObj = Instantiate(m_messagePrefab, m_chatContainer);
             var messageUI = messageObj.GetComponent<MessageUI>();
             Debug.Log($"messageui {messageObj.name}");
@@ -99,10 +103,6 @@ public class Test : MonoBehaviour
         {
             Debug.Log(e.Message);
         }
-
-
-        Debug.Log("TMP");
-
     }
     [ContextMenu("Create som F")]
     public void AddMessageToChat()
@@ -123,26 +123,7 @@ public class Test : MonoBehaviour
         if (_started)
         {
             streaming.Update();
-            lock (messageLock)
-            {
-                if (Streaming.messagesQueue.Count > 0)
-                {
-                    var messageData = Streaming.messagesQueue.Dequeue();
-                    try
-                    {
 
-                        GameObject messageObj = Instantiate(m_messagePrefab, m_chatContainer);
-                        var messageUI = messageObj.GetComponent<MessageUI>();
-                        Debug.Log($"messageui {messageObj.name}");
-                        messageUI.SetMessageUI(messageData);
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.Log(e.Message);
-                    }
-
-                }
-            }
         }
 
 
