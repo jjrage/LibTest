@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 0cd7a7954e461ea4480c45e512ed2037
+guid: e2a701e486649494faa378a98d2e26b0
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -18,15 +18,13 @@ PluginImporter:
       settings:
         Exclude Android: 0
         Exclude Editor: 0
-        Exclude Linux64: 0
-        Exclude Lumin: 0
-        Exclude OSXUniversal: 0
-        Exclude WebGL: 1
+        Exclude Linux64: 1
+        Exclude OSXUniversal: 1
+        Exclude WebGL: 0
         Exclude Win: 0
         Exclude Win64: 0
         Exclude WindowsStoreApps: 0
-        Exclude iOS: 1
-        Exclude tvOS: 0
+        Exclude iOS: 0
   - first:
       Android: Android
     second:
@@ -36,7 +34,7 @@ PluginImporter:
   - first:
       Any: 
     second:
-      enabled: 0
+      enabled: 1
       settings: {}
   - first:
       Editor: Editor
@@ -47,34 +45,34 @@ PluginImporter:
         DefaultValueInitialized: true
         OS: AnyOS
   - first:
-      Lumin: Lumin
-    second:
-      enabled: 1
-      settings: {}
-  - first:
       Standalone: Linux64
     second:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: AnyCPU
+        CPU: None
   - first:
       Standalone: OSXUniversal
     second:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: x86_64
+        CPU: None
   - first:
       Standalone: Win
     second:
       enabled: 1
       settings:
-        CPU: x86
+        CPU: None
   - first:
       Standalone: Win64
     second:
       enabled: 1
       settings:
-        CPU: x86_64
+        CPU: None
+  - first:
+      WebGL: WebGL
+    second:
+      enabled: 1
+      settings: {}
   - first:
       Windows Store Apps: WindowsStoreApps
     second:
@@ -88,17 +86,9 @@ PluginImporter:
   - first:
       iPhone: iOS
     second:
-      enabled: 0
-      settings:
-        AddToEmbeddedBinaries: false
-        CPU: AnyCPU
-        CompileFlags: 
-        FrameworkDependencies: 
-  - first:
-      tvOS: tvOS
-    second:
       enabled: 1
       settings:
+        AddToEmbeddedBinaries: false
         CPU: AnyCPU
         CompileFlags: 
         FrameworkDependencies: 
