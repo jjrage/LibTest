@@ -1,19 +1,17 @@
-﻿using FM.LiveSwitch;
+using FM.LiveSwitch;
 using FM.LiveSwitch.Unity;
 using StreamingLibrary;
 using UnityEngine;
 
-namespace LocalMediaSpace
-{
-    public abstract class StreamLocalMedia : CustomRtcLocalMedia<UnityEngine.RectTransform>
+    public abstract class LocalMedia : CustomRtcLocalMedia<UnityEngine.RectTransform>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="StreamLocalMedia"/> class.
+        /// Initializes a new instance of the <see cref="LocalMedia"/> class.
         /// </summary>
         /// <param name="disableAudio">Whether to disable audio.</param>
         /// <param name="disableVideo">Whether to disable video.</param>
         /// <param name="aecContext">The AEC context, if using software echo cancellation.</param>
-        public StreamLocalMedia(bool disableAudio, bool disableVideo)
+        public LocalMedia(bool disableAudio, bool disableVideo)
             : base(disableAudio, disableVideo)
         { }
 
@@ -91,7 +89,7 @@ namespace LocalMediaSpace
         //}
     }
 
-    public class CustomLocalTexture2DMedia : LocalMedia
+    public class LocalTexture2DMedia : LocalMedia
     {
         private Size _size;
         private int _targetFrameRate;
@@ -104,7 +102,7 @@ namespace LocalMediaSpace
         /// <param name="disableAudio">Whether to disable audio.</param>
         /// <param name="disableVideo">Whether to disable video.</param>
         /// <param name="aecContext">The AEC context, if using software echo cancellation.</param>
-        public CustomLocalTexture2DMedia(bool disableAudio, bool disableVideo)
+        public LocalTexture2DMedia(bool disableAudio, bool disableVideo)
             : base(disableAudio, disableVideo)
         { }
         public void SetVideoSettings(Size size, int targetFrameRate)
@@ -181,5 +179,3 @@ namespace LocalMediaSpace
             set { ((Custom2DTextureSource)VideoSource).Texture2D = value; }
         }
     }
-}
- 
