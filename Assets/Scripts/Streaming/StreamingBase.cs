@@ -474,6 +474,7 @@ namespace StreamingLibraryInternal
                     }
 
                     p.MinBitrate = minBitrate;
+                    Debug.Log($"Active video encoder {p}");
                 }
                 else
                 {
@@ -562,7 +563,7 @@ namespace StreamingLibraryInternal
                     //Debug.Log("Upstream connection created as broadcaster");
                     audioStream = new AudioStream(_localMedia, remoteMedia: null);
                     videoStream = _audioOnly ? null : new VideoStream(_localMedia);
-
+                    
                     sfuUpstreamConnection = _channel?.CreateSfuUpstreamConnection(audioStream, videoStream, dataStream);
                 }
                 else
@@ -612,7 +613,15 @@ namespace StreamingLibraryInternal
             {
                 Debug.LogError("Error while opening SFU upstream connection");
             }
+
+            
         }
+
+        private void VideoEncoderChanged(VideoEncoder p)
+        {
+            Debug.Log($"Encoder {p.Id}");
+        }
+
         private async Task OpenSfuDownstreamConnection(ConnectionInfo remoteConnectionInfo)
         {
             try
