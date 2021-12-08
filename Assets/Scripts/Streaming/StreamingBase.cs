@@ -1,6 +1,5 @@
 ﻿using FM.LiveSwitch;
 using FM.LiveSwitch.Unity;
-using LocalMediaSpace;
 using StreamingLibrary;
 using System;
 using System.Collections;
@@ -269,8 +268,8 @@ namespace StreamingLibraryInternal
 
         internal async Task Join()
         {
-            //try
-            //{
+            try
+            {
                 _client = new Client(_currentJoinInfo.Gateway, _currentJoinInfo.AppId, _UserId, _DeviceId)
                 {
                     Tag = _mode.ToString(),
@@ -318,17 +317,17 @@ namespace StreamingLibraryInternal
 
                 // register/join
                 await Register();
-            //}
-            //catch
-            //{
-            //    Debug.LogError("Error while joining to channel");
-            //}
+            }
+            catch
+            {
+                Debug.LogError("Error while joining to channel");
+            }
         }
 
         private async Task Register()
         {
-            //try
-            //{
+            try
+            {
                 var registerToken = Token.GenerateClientRegisterToken(_client, _channelId, _currentJoinInfo.SharedKey);
 
                 // register (and join at the same time)
@@ -436,11 +435,11 @@ namespace StreamingLibraryInternal
                     }
                 }
                 OnStreamInited?.Invoke();
-            //}
-            //catch (Exception ex)
-            //{
-                //Debug.LogError($"Error while register client: {ex.Message}");
-            //}
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error while register client: {ex.Message}");
+            }
         }
 
         private void ActiveAudioPacketizerChange(AudioPipe p)
@@ -562,9 +561,8 @@ namespace StreamingLibraryInternal
                 {
                     //Debug.Log("Upstream connection created as broadcaster");
                     audioStream = new AudioStream(_localMedia, remoteMedia: null);
-                    //audioStream = new AudioStream();
                     videoStream = _audioOnly ? null : new VideoStream(_localMedia);
-                    //videoStream = _audioOnly ? null : new VideoStream();
+
                     sfuUpstreamConnection = _channel?.CreateSfuUpstreamConnection(audioStream, videoStream, dataStream);
                 }
                 else

@@ -48,14 +48,14 @@ internal class VideoUtility
         }
     }
 
-    public static CustomVideoEncodingConfig GetEncodingConfig(VideoDegradationPreference degradationPreference, double multiplier, double frameRate)
+    public static VideoEncodingConfig GetEncodingConfig(VideoDegradationPreference degradationPreference, double multiplier, double frameRate)
     {
-        CustomVideoEncodingConfig videoEncodingConfig = new CustomVideoEncodingConfig();
+        VideoEncodingConfig videoEncodingConfig = new VideoEncodingConfig();
         UpdateEncodingConfig(videoEncodingConfig, degradationPreference, multiplier, frameRate);
         return videoEncodingConfig;
     }
-    
-    public static void UpdateEncodingConfig(CustomVideoEncodingConfig encodingConfig, VideoDegradationPreference degradationPreference, double multiplier, double frameRate)
+
+    public static void UpdateEncodingConfig(VideoEncodingConfig encodingConfig, VideoDegradationPreference degradationPreference, double multiplier, double frameRate)
     {
         if (degradationPreference == VideoDegradationPreference.Balanced)
         {
