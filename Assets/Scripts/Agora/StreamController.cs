@@ -36,7 +36,6 @@ public class StreamController : MonoBehaviour
         {
             Debug.Log("Name: " + device);
         }
-
     }
 
     private void OnApplicationQuit()

@@ -1032,6 +1032,7 @@ GameObject:
   m_Component:
   - component: {fileID: 540040120}
   - component: {fileID: 540040119}
+  - component: {fileID: 540040121}
   m_Layer: 0
   m_Name: StreamingExample
   m_TagString: Untagged
@@ -1071,6 +1072,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &540040121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540040118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec9a9359d43e4d64fade06a1b2d7204b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RecordingDeviceIndex: 11
+  RecordingDeviceName: 
+  Latency: 1
+  PlayAndPause: 32
+  ReverbOnOffSwitch: 0
 --- !u!1 &571619544
 GameObject:
   m_ObjectHideFlags: 0

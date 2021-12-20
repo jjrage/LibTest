@@ -10,6 +10,7 @@ public class StreamClient : IVideoChatClient
     private RenderTexture _videoSource;
     protected IRtcEngine mRtcEngine;
     protected string mChannel;
+    private AudioRawDataManager mAudioManager;
 
     protected virtual void OnJoinChannelSuccess(string channelName, uint uid, int elapsed)
     {
@@ -69,6 +70,20 @@ public class StreamClient : IVideoChatClient
             int a = rtc.PushVideoFrame(frame);
             Debug.Log($"Frame pushed {a}");
         }
+    }
+    public void setUpRawAudioData()
+    {
+        mAudioManager = AudioRawDataManager.GetInstance(mRtcEngine);
+        // Registers the audio observer.
+        mAudioManager.RegisterAudioRawDataObserver();
+
+        // Listens for the OnRecordAudioFrameHandler delegate.
+        mAudioManager.SetOnRecordAudioFrameCallback(OnRecordAudioFrameHandler);
+    }
+
+    private void OnRecordAudioFrameHandler(AudioFrame audioFrame)
+    {
+        Debug.Log(audioFrame.buffer.Length);
     }
 
     public void Join(string channel)
@@ -144,6 +159,8 @@ public class StreamClient : IVideoChatClient
         mRtcEngine.EnableVideo();
         // allow camera output callback
         mRtcEngine.EnableVideoObserver();
+        mRtcEngine.SetVideoProfile(VIDEO_PROFILE_TYPE.VIDEO_PROFILE_LANDSCAPE_720P_3);
         mRtcEngine.SetExternalVideoSource(true, false);
+        setUpRawAudioData();
     }
 }
