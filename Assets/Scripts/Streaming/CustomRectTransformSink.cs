@@ -200,7 +200,7 @@ namespace StreamingLibrary
                 int height = result.Height;
                 if (_Texture.width != width || _Texture.height != height)
                 {
-                    _Texture.Resize(width, height);
+                    _Texture.Reinitialize(width, height);
                 }
 
                 //ApplyViewMirror();
@@ -256,7 +256,7 @@ namespace StreamingLibrary
                 int height = result.Height;
                 if (_Texture.width != width || _Texture.height != height)
                 {
-                    _Texture.Resize(width, height);
+                    _Texture.Reinitialize(width, height);
                 }
 
                 //ApplyViewMirror();

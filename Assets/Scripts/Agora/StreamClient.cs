@@ -2,15 +2,19 @@ using agora_gaming_rtc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class StreamClient : IVideoChatClient
 {
     public event Action OnJoinedSuccess;
-    private RenderTexture _videoSource;
-    protected IRtcEngine mRtcEngine;
     protected string mChannel;
-    private AudioRawDataManager mAudioManager;
+    protected IRtcEngine mRtcEngine;
+    private IAudioRawDataManager rawAudioManager;
+    private Dropdown audioDeviceDropDown;
+    private Dictionary<string, string> audioDevices = new Dictionary<string, string>();
+    private IAudioRecordingDeviceManager recordingDeviceManager;
 
     protected virtual void OnJoinChannelSuccess(string channelName, uint uid, int elapsed)
     {
@@ -27,21 +31,6 @@ public class StreamClient : IVideoChatClient
         {
             return; // reuse
         }
-
-        //// create a GameObject and assign to this new user
-        //VideoSurface videoSurface = makeImageSurface(uid.ToString());
-        //if (!ReferenceEquals(videoSurface, null))
-        //{
-        //    // configure videoSurface
-        //    videoSurface.SetForUser(uid);
-        //    videoSurface.SetEnable(true);
-        //    videoSurface.SetVideoSurfaceType(AgoraVideoSurfaceType.RawImage);
-        //    videoSurface.SetGameFps(30);
-        //    videoSurface.EnableFilpTextureApply(enableFlipHorizontal: true, enableFlipVertical: false);
-        //    UserVideoDict[uid] = videoSurface;
-        //    Vector2 pos = AgoraUIUtils.GetRandomPosition(100);
-        //    videoSurface.transform.localPosition = new Vector3(pos.x, pos.y, 0);
-        //}
     }
 
     internal void DisableEngine()
@@ -57,9 +46,19 @@ public class StreamClient : IVideoChatClient
         }
     }
 
-    public void SetVideoSource(RenderTexture texture)
+    public void SetAudioDeviceDropdown(Dropdown dropdown)
     {
-        _videoSource = texture;
+        audioDeviceDropDown = dropdown;
+        audioDeviceDropDown.onValueChanged.AddListener(ChangeAudioDevice);
+    }
+
+    private void ChangeAudioDevice(int arg0)
+    {
+        string deviceID = audioDevices.Keys.ElementAt(arg0);
+        recordingDeviceManager.SetAudioRecordingDevice(deviceID);
+        string name = string.Empty;
+        string id = string.Empty;
+        //recordingDeviceManager.GetCurrentRecordingDevice(ref name, ref id);
     }
 
     public void PushFrame(ExternalVideoFrame frame)
@@ -68,74 +67,64 @@ public class StreamClient : IVideoChatClient
         if (rtc != null)
         {
             int a = rtc.PushVideoFrame(frame);
-            Debug.Log($"Frame pushed {a}");
         }
     }
     public void SetAudioDevice()
     {
         int enableAudio = mRtcEngine.EnableAudio();
-        int enableLocalAudio = mRtcEngine.EnableLocalAudio(true);
-        Debug.Log($"audio {enableAudio} local audio {enableLocalAudio}");
-
-        var rawAudioManager = mRtcEngine.GetAudioRawDataManager();
-        rawAudioManager.SetOnPlaybackAudioFrameCallback(OnPlayAudioFrame);
+        mRtcEngine.SetAudioProfile(AUDIO_PROFILE_TYPE.AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO, AUDIO_SCENARIO_TYPE.AUDIO_SCENARIO_SHOWROOM);
+        mRtcEngine.MuteLocalAudioStream(false);
+        rawAudioManager = mRtcEngine.GetAudioRawDataManager();
         int registerAudioRawDataObserver = rawAudioManager.RegisterAudioRawDataObserver();
-
-        Debug.Log($"raw audio data observer {registerAudioRawDataObserver}");
-        //mRtcEngine.SetExternalAudioSource(true, 48000, 2);
-        mRtcEngine.SetAudioProfile(AUDIO_PROFILE_TYPE.AUDIO_PROFILE_MUSIC_HIGH_QUALITY_STEREO, AUDIO_SCENARIO_TYPE.AUDIO_SCENARIO_GAME_STREAMING);
+        rawAudioManager.SetOnRecordAudioFrameCallback(OnPlayAudioFrame);
     }
 
-    public IEnumerator AudioCheck()
+    public void AudioCheck()
     {
-        yield return new WaitForSeconds(3);
-        var audioPlaybackDeviceManager = mRtcEngine.GetAudioPlaybackDeviceManager();
-        audioPlaybackDeviceManager.CreateAAudioPlaybackDeviceManager();
-        int deviceCount = audioPlaybackDeviceManager.GetAudioPlaybackDeviceCount();
-        string deviceID = "{0.0.0.00000000}.{4e6ff308-4316-4add-90eb-5a6582b123b0}";
-        int setAudioPlaybackDevice = audioPlaybackDeviceManager.SetAudioPlaybackDevice(deviceID);
-        int getAudioPlaybackDevice = audioPlaybackDeviceManager.GetCurrentPlaybackDevice(ref deviceID);
+        SetAudioDevice();
+        recordingDeviceManager = mRtcEngine.GetAudioRecordingDeviceManager();
+        recordingDeviceManager.CreateAAudioRecordingDeviceManager();
 
-        Debug.Log($"device count {deviceCount}, {setAudioPlaybackDevice}, {getAudioPlaybackDevice}");
+        int deviceCount = recordingDeviceManager.GetAudioRecordingDeviceCount();
+        recordingDeviceManager.SetAudioRecordingDeviceMute(false);
+        List<Dropdown.OptionData> audioDeviceOptionData = new List<Dropdown.OptionData>();
 
         for (int i = 0; i < deviceCount; i++)
         {
             string deviceName = string.Empty;
             string deviceid = string.Empty;
-            audioPlaybackDeviceManager.GetAudioPlaybackDevice(i, ref deviceName, ref deviceid);
-            Debug.Log($"Device name {deviceName}, device id {deviceid}");
+            recordingDeviceManager.GetAudioRecordingDevice(i, ref deviceName, ref deviceid);
+            Dropdown.OptionData option = new Dropdown.OptionData();
+            option.text = deviceName;
+            audioDeviceOptionData.Add(option);
+            audioDevices.Add(deviceid, deviceName);
         }
 
-        var audioRecordingDeviceManager = mRtcEngine.GetAudioRecordingDeviceManager();
-        audioRecordingDeviceManager.CreateAAudioRecordingDeviceManager();
-        int recordingDeviceCount = audioRecordingDeviceManager.GetAudioRecordingDeviceCount();
+        audioDeviceDropDown.AddOptions(audioDeviceOptionData);
+    }
 
-        Debug.Log($"device count {recordingDeviceCount}");
-        for (int i = 0; i < recordingDeviceCount; i++)
+    private void OnVolumeIndication(AudioVolumeInfo[] speakers, int speakerNumber, int totalVolume)
+    {
+        foreach(var speaker in speakers)
         {
-            string deviceName = string.Empty;
-            string deviceid = string.Empty;
-            audioPlaybackDeviceManager.GetAudioPlaybackDevice(i, ref deviceName, ref deviceid);
-            Debug.Log($"Device name {deviceName}, device id {deviceid}");
+            Debug.Log($"Speaker {speaker.uid} volume {speaker.volume}");
         }
+        Debug.Log($"Total volume {totalVolume}");
+    }
+
+    private void AudioRouteChanged(AUDIO_ROUTE route)
+    {
+        Debug.Log($"Audio route changed {route}");
+    }
+
+    private void AudioDeviceVolumeChanged(MEDIA_DEVICE_TYPE deviceType, int volume, bool muted)
+    {
+        Debug.Log($"Device {deviceType} volume changed {volume}");
     }
 
     private void OnPlayAudioFrame(AudioFrame audioFrame)
     {
-        Debug.Log($"buffer.Length {audioFrame.buffer.Length}");
-        Debug.Log($"bytesPerSample {audioFrame.bytesPerSample}");
-        Debug.Log($"channels {audioFrame.channels}");
-        Debug.Log($"samples {audioFrame.samples}");
-        Debug.Log($"samplesPerSec {audioFrame.samplesPerSec}");
-        Debug.Log($"type {audioFrame.type}");
-
-        mRtcEngine.PushAudioFrame(audioFrame);
-        
-    }
-
-    private void OnRecordAudioFrameHandler(AudioFrame audioFrame)
-    {
-        Debug.Log(audioFrame.buffer.Length);
+        mRtcEngine.PushAudioFrame(audioFrame);     
     }
 
     public void Join(string channel)
@@ -150,6 +139,9 @@ public class StreamClient : IVideoChatClient
         // set callbacks (optional)
         mRtcEngine.OnJoinChannelSuccess = OnJoinChannelSuccess;
         mRtcEngine.OnUserJoined = OnUserJoined;
+        mRtcEngine.OnAudioDeviceVolumeChanged += AudioDeviceVolumeChanged;
+        mRtcEngine.OnAudioRouteChanged += AudioRouteChanged;
+        mRtcEngine.OnVolumeIndication += OnVolumeIndication;
         // Calling virtual setup function
         PrepareToJoin();
 
@@ -170,12 +162,14 @@ public class StreamClient : IVideoChatClient
         mRtcEngine.LeaveChannel();
         // deregister video frame observers in native-c code
         mRtcEngine.DisableVideoObserver();
+        rawAudioManager.UnRegisterAudioRawDataObserver();
+        recordingDeviceManager.ReleaseAAudioRecordingDeviceManager();
     }
 
     public void LoadEngine(string appId)
     {
         mRtcEngine = IRtcEngine.GetEngine(appId);
-
+        
         mRtcEngine.OnError = (code, msg) =>
         {
             Debug.LogErrorFormat("RTC Error:{0}, msg:{1}", code, IRtcEngine.GetErrorDescription(code));
@@ -189,7 +183,7 @@ public class StreamClient : IVideoChatClient
         // mRtcEngine.SetLogFile(logFilepath);
         // enable log
         mRtcEngine.SetLogFilter(LOG_FILTER.DEBUG | LOG_FILTER.INFO | LOG_FILTER.WARNING | LOG_FILTER.ERROR | LOG_FILTER.CRITICAL);
-        SetAudioDevice();
+
     }
 
     public void UnloadEngine()
@@ -208,12 +202,10 @@ public class StreamClient : IVideoChatClient
     {
         mRtcEngine.SetChannelProfile(CHANNEL_PROFILE.CHANNEL_PROFILE_LIVE_BROADCASTING);
         mRtcEngine.SetClientRole(CLIENT_ROLE_TYPE.CLIENT_ROLE_BROADCASTER);
-        // enable video
         mRtcEngine.EnableVideo();
-        // allow camera output callback
         mRtcEngine.EnableVideoObserver();
         mRtcEngine.SetVideoProfile(VIDEO_PROFILE_TYPE.VIDEO_PROFILE_LANDSCAPE_720P_3);
         mRtcEngine.SetExternalVideoSource(true, false);
-        
+        AudioCheck();
     }
 }

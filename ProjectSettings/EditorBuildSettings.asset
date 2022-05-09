@@ -5,10 +5,10 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Example/Scenes/StreamExampleA.unity
     guid: e46d9c1553ce7a74b84fd728dc5cf917
-  - enabled: 1
+  - enabled: 0
     path: Assets/Example/Scenes/StreamExampleAReceiver.unity
     guid: bce7a51cf0eadcb449570449c562d7aa
   m_configObjects: {}

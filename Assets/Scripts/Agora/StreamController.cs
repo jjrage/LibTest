@@ -13,7 +13,9 @@ public class StreamController : MonoBehaviour
     [SerializeField]
     private Button _leaveStream;
     [SerializeField]
-    private InputField _channelName;
+    private TMPro.TMP_InputField _channelName;
+    [SerializeField]
+    private Dropdown _audioDropdown;
     [SerializeField]
     private string _appId;
     [SerializeField]
@@ -32,12 +34,9 @@ public class StreamController : MonoBehaviour
         _app.OnJoinedSuccess += SetClientVideo;
         _startStream.onClick.AddListener(StartStream); 
         _leaveStream.onClick.AddListener(LeaveStream);
-        foreach (var device in Microphone.devices)
-        {
-            Debug.Log("Name: " + device);
-        }
         _app.LoadEngine(_appId);
-        StartCoroutine(_app.AudioCheck());
+        _app.SetAudioDeviceDropdown(_audioDropdown);
+        //StartCoroutine(_app.AudioCheck());
     }
 
     private void OnApplicationQuit()
@@ -53,13 +52,12 @@ public class StreamController : MonoBehaviour
 
     private void SetClientVideo()
     {
-        _app.SetVideoSource(_clientVideo);
         _joined = true;
     }
 
     private void StartStream()
     {
-        _app.LoadEngine(_appId);
+        //_app.LoadEngine(_appId);
         _app.Join(_channelName.text);
     }
 

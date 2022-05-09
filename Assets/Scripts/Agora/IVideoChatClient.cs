@@ -7,6 +7,5 @@ public interface IVideoChatClient
     void LoadEngine(string appId);
     void UnloadEngine();
     void EnableVideo(bool enable);
-    void SetVideoSource(RenderTexture texture);
     event System.Action OnJoinedSuccess;
 }
